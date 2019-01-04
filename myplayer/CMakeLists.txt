@@ -21,7 +21,9 @@ add_library( # Sets the name of the library.
         src/main/cpp/JfCallJava.cpp
         src/main/cpp/JfFFmpeg.cpp
         src/main/cpp/JfAudio.cpp
-        src/main/cpp/JfAudio.cpp)
+        src/main/cpp/JfAudio.cpp
+        src/main/cpp/JfPlayStatus.cpp
+        src/main/cpp/JfQueue.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

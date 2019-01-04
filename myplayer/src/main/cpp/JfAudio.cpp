@@ -4,8 +4,9 @@
 
 #include "JfAudio.h"
 
-JfAudio::JfAudio() {
-
+JfAudio::JfAudio(JfPlayStatus *playStatus ) {
+    this->playStatus = playStatus;
+    queue = new JfQueue(playStatus);
 }
 
 JfAudio::~JfAudio() {

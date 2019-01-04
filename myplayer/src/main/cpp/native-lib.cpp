@@ -13,7 +13,7 @@ extern "C" {
 JavaVM *javaVM =NULL;
 JfCallJava *callJava = NULL;
 JfFFmpeg *ffmpeg = NULL;
-
+JfPlayStatus *playStatus = NULL;
 /**
  *   用来初始化JavaVM对象
  *
@@ -39,7 +39,9 @@ Java_com_example_myplayer_player_JfPlayer_n_1prepared(JNIEnv *env, jobject insta
         if (callJava == NULL){
             callJava = new JfCallJava(javaVM,env,&instance);
         }
-        ffmpeg = new JfFFmpeg(callJava,source);
+
+        playStatus = new JfPlayStatus();
+        ffmpeg = new JfFFmpeg(playStatus,callJava,source);
         ffmpeg->prepare();
     }
 

@@ -20,14 +20,15 @@ public:
     const char *url = NULL;//文件的url
     pthread_t decodeThread = NULL;//解码的子线程
 
-
     /**
      * 解码相关
      */
     AVFormatContext *pAFmtCtx = NULL;
     JfAudio *audio = NULL;
+
+    JfPlayStatus *playStatus = NULL;
 public:
-    JfFFmpeg(JfCallJava *callJava,const char *url);//参数都是从外面传进来的
+    JfFFmpeg(JfPlayStatus *playStatus,JfCallJava *callJava,const char *url);//参数都是从外面传进来的
     ~JfFFmpeg();
 
     void prepare();
