@@ -112,5 +112,8 @@ target_link_libraries( # Specifies the target library.
         swscale-4
         postproc-54
         avfilter-6
+
+        OpenSLES
+
         -landroid
         ${log-lib})

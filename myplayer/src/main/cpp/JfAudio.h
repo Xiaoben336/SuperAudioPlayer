@@ -7,6 +7,8 @@
 
 #include "JfQueue.h"
 #include "JfPlayStatus.h"
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 extern "C"{
 #include <libavcodec/avcodec.h>
 #include <libswresample/swresample.h>
@@ -29,14 +31,28 @@ public:
     int ret = -1;
 
     uint8_t *buffer = NULL;
-
     int data_size;//buffer size
+
+    SLObjectItf engineObject = NULL;
+    SLEngineItf engineEngine = NULL;
+
+    SLObjectItf outputMixObject = NULL;
+    SLEnvironmentalReverbItf outputMixEnvReb = NULL;
+    SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
+
+    SLObjectItf pcmPlayerObject = NULL;
+    SLPlayItf pcmPlayerPlay = NULL;
+
+    SLAndroidSimpleBufferQueueItf pcmBufferQueue = NULL;
+
 public:
     JfAudio(JfPlayStatus *playStatus );
     ~JfAudio();
 
     void play();//播放
     int resampleAudio();//返回重采样的大小，用于求时间
+
+    void initOpenSLES();
 };
 
 

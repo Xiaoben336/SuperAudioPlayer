@@ -17,14 +17,14 @@ JfAudio::~JfAudio() {
 
 void *decodePlay(void *data){
     JfAudio *jfAudio = (JfAudio *)(data);
-    jfAudio->resampleAudio();
+    //jfAudio->resampleAudio();
+    jfAudio->initOpenSLES();
     pthread_exit(&jfAudio->playThread);
 }
 void JfAudio::play() {
     pthread_create(&playThread,NULL,decodePlay,this);
 }
 
-FILE *outFile = fopen("/storage/emulated/0/Charlie Puth - Look At Me Now.pcm","w");
 
 int JfAudio::resampleAudio() {
     while (playStatus != NULL && !playStatus->exit){
@@ -94,9 +94,9 @@ int JfAudio::resampleAudio() {
 
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
-            fwrite(buffer,1,data_size,outFile);
-
-            LOGD("DATA SIZE == %d",data_size);
+            if (LOG_DEBUG){
+                LOGD("DATA SIZE == %d",data_size);
+            }
 
             av_packet_free(&avPacket);
             av_free(avPacket);
@@ -108,6 +108,7 @@ int JfAudio::resampleAudio() {
 
             swr_free(&swr_ctx);
             swr_ctx = NULL;
+            break;
         } else {
             av_packet_free(&avPacket);
             av_free(avPacket);
@@ -119,5 +120,73 @@ int JfAudio::resampleAudio() {
             continue;
         }
     }
-    return 0;
+    return data_size;
+}
+
+
+void pcmBufferCallback(SLAndroidSimpleBufferQueueItf bf,void *context){
+    //获取pcm数据
+    JfAudio *jfAudio = (JfAudio *)context;
+    if (jfAudio != NULL){
+        int buffer_size = jfAudio->resampleAudio();
+        if (buffer_size > 0){
+            (*jfAudio->pcmBufferQueue)->Enqueue(jfAudio->pcmBufferQueue,jfAudio->buffer,buffer_size);
+        }
+    } else {
+        if (LOG_DEBUG){
+            LOGE("jfAudio == NULL");
+        }
+    }
+}
+
+void JfAudio::initOpenSLES() {
+    // 1、创建一个引擎：三部曲 slCreateEngine->Realize->GetInterface
+    slCreateEngine(&engineObject,0,0,0,0,0);
+    (*engineObject)->Realize(engineObject,SL_BOOLEAN_FALSE);
+    (*engineObject)->GetInterface(engineObject,SL_IID_ENGINE,&engineEngine);
+
+
+    // 2、设置混音器：创建混音器引擎->设置混音器属性
+    const SLInterfaceID mids[1] = {SL_IID_ENVIRONMENTALREVERB};
+    const SLboolean mrep[1] = {SL_BOOLEAN_FALSE};
+
+    (*engineEngine)->CreateOutputMix(engineEngine,&outputMixObject,1,mids,mrep);
+    (*outputMixObject)->Realize(outputMixObject,SL_BOOLEAN_FALSE);
+    (*outputMixObject)->GetInterface(outputMixObject,SL_IID_ENVIRONMENTALREVERB,&outputMixEnvReb);
+
+    (*outputMixEnvReb)->SetEnvironmentalReverbProperties(outputMixEnvReb,&reverbSettings);
+
+
+    // 3、创建播放器
+    SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,2};//一个队列
+    SLDataFormat_PCM format_pcm = {//设置PCM播放时的属性
+            SL_DATAFORMAT_PCM,
+            2,
+            SL_SAMPLINGRATE_44_1,
+            SL_PCMSAMPLEFORMAT_FIXED_16,
+            SL_PCMSAMPLEFORMAT_FIXED_16,
+            SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
+            SL_BYTEORDER_LITTLEENDIAN
+    };
+    SLDataSource slDataSource ={&android_queue,&format_pcm};
+
+    SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX,outputMixObject};
+    SLDataSink audioSink = {&outputMix,NULL};
+
+    const SLInterfaceID ids[1] = {SL_IID_BUFFERQUEUE};
+    const SLboolean req[1] = {SL_BOOLEAN_TRUE};
+    (*engineEngine)->CreateAudioPlayer(engineEngine,&pcmPlayerObject,&slDataSource,&audioSink,1,ids,req);
+    (*pcmPlayerObject)->Realize(pcmPlayerObject,SL_BOOLEAN_FALSE);
+    (*pcmPlayerObject)->GetInterface(pcmPlayerObject,SL_IID_PLAY,&pcmPlayerPlay);
+
+
+    //4、设置缓冲队列和回调函数
+    (*pcmPlayerObject)->GetInterface(pcmPlayerObject,SL_IID_BUFFERQUEUE,&pcmBufferQueue);
+    (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue,pcmBufferCallback,this);
+
+
+    //5、设置播放状态
+    (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,SL_PLAYSTATE_PLAYING);
+
+    pcmBufferCallback(pcmBufferQueue,this);
 }
