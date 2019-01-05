@@ -9,6 +9,7 @@
 #include "JfPlayStatus.h"
 extern "C"{
 #include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
 };
 
 
@@ -21,9 +22,21 @@ public:
 
     JfQueue *queue = NULL;
     JfPlayStatus *playStatus = NULL;
+
+    pthread_t playThread;
+    AVPacket *avPacket = NULL;
+    AVFrame *avFrame = NULL;//解码出来的帧
+    int ret = -1;
+
+    uint8_t *buffer = NULL;
+
+    int data_size;//buffer size
 public:
     JfAudio(JfPlayStatus *playStatus );
     ~JfAudio();
+
+    void play();//播放
+    int resampleAudio();//返回重采样的大小，用于求时间
 };
 
 

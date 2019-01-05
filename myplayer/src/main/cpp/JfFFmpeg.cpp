@@ -93,8 +93,10 @@ void JfFFmpeg::start() {
         }
     }
 
+    audio->play();
+
     int count;
-    while (1) {
+    while (playStatus != NULL && !playStatus->exit) {
         AVPacket *avPacket = av_packet_alloc();
         if (av_read_frame(pAFmtCtx,avPacket) == 0) {
             if (avPacket->stream_index == audio->streamIndex){
@@ -112,10 +114,19 @@ void JfFFmpeg::start() {
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;
-            break;
+            //队列中的avPacket还没有解码完
+            while (playStatus != NULL && !playStatus->exit){
+                if (audio->queue->getQueueSize() > 0){//把缓存中的avPacket也要释放出来
+                    continue;
+                } else {
+                    playStatus->exit = true;
+                    break;
+                }
+            }
         }
     }
 
+/*
     while (audio->queue->getQueueSize() > 0){
         AVPacket *avPacket = av_packet_alloc();
         audio->queue->getAVPacket(avPacket);
@@ -123,6 +134,7 @@ void JfFFmpeg::start() {
         av_free(avPacket);
         avPacket = NULL;
     }
+*/
 
     if (LOG_DEBUG){
         LOGD("解码完成");
