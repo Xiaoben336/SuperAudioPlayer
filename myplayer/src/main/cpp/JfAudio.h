@@ -32,6 +32,7 @@ public:
 
     uint8_t *buffer = NULL;
     int data_size;//buffer size
+    int sample_rate = 0;//保存输入音频文件OpenSL ES的采样率
 
     SLObjectItf engineObject = NULL;
     SLEngineItf engineEngine = NULL;
@@ -46,13 +47,15 @@ public:
     SLAndroidSimpleBufferQueueItf pcmBufferQueue = NULL;
 
 public:
-    JfAudio(JfPlayStatus *playStatus );
+    JfAudio(JfPlayStatus *playStatus,int sample_rate);
     ~JfAudio();
 
     void play();//播放
     int resampleAudio();//返回重采样的大小，用于求时间
 
     void initOpenSLES();
+
+    uint getCurrentSampleRateForOpenSLES(int sample_rate);
 };
 
 

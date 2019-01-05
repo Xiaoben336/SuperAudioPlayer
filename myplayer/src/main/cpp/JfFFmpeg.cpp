@@ -46,7 +46,7 @@ void JfFFmpeg::decodeAudioThread() {
     for (int i = 0; i < pAFmtCtx->nb_streams; i++) {
         if (pAFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (audio == NULL) {
-                audio = new JfAudio(playStatus);
+                audio = new JfAudio(playStatus,pAFmtCtx->streams[i]->codecpar->sample_rate);
                 audio->streamIndex = i;
                 audio->codecpar = pAFmtCtx->streams[i]->codecpar;
             }
