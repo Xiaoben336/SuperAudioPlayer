@@ -12,7 +12,7 @@ class JfPlayStatus {
 
 public:
     bool exit;
-
+    bool loading;
 public:
     JfPlayStatus();
 };

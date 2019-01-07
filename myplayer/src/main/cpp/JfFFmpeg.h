@@ -35,6 +35,8 @@ public:
     void decodeAudioThread();
 
     void start();
+    void pause();
+    void resume();
 };
 
 

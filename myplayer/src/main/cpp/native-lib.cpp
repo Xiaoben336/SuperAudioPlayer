@@ -57,5 +57,24 @@ Java_com_example_myplayer_player_JfPlayer_n_1start(JNIEnv *env, jobject instance
     if (ffmpeg != NULL){
         ffmpeg->start();
     }
+}
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myplayer_player_JfPlayer_n_1pause(JNIEnv *env, jobject instance) {
+
+    // TODO
+    if (ffmpeg != NULL){
+        ffmpeg->pause();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_myplayer_player_JfPlayer_n_1resume(JNIEnv *env, jobject instance) {
+
+    // TODO
+    if (ffmpeg != NULL){
+        ffmpeg->resume();
+    }
 }

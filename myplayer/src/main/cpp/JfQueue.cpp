@@ -20,9 +20,9 @@ int JfQueue::putAVPacket(AVPacket *avPacket) {
     pthread_mutex_lock(&mutexPacket);
 
     queuePacket.push(avPacket);
-    if (LOG_DEBUG){
+    /*if (LOG_DEBUG){
         LOGD("放入一个AVPacket到队列中，个数为 == %d",queuePacket.size());
-    }
+    }*/
 
     pthread_cond_signal(&condPacket);//入队完之后发一个信号
 
@@ -43,9 +43,9 @@ int JfQueue::getAVPacket(AVPacket *packet) {
             av_free(avPacket);
             avPacket = NULL;
 
-            if (LOG_DEBUG){
+            /*if (LOG_DEBUG){
                 LOGD("从队列中取出一个AVPacket，还剩下%d个",queuePacket.size());
-            }
+            }*/
 
             break;
         } else {

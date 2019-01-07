@@ -7,6 +7,7 @@
 
 #include "JfQueue.h"
 #include "JfPlayStatus.h"
+#include "JfCallJava.h"
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 extern "C"{
@@ -24,6 +25,7 @@ public:
 
     JfQueue *queue = NULL;
     JfPlayStatus *playStatus = NULL;
+    JfCallJava *callJava;
 
     pthread_t playThread;
     AVPacket *avPacket = NULL;
@@ -47,7 +49,7 @@ public:
     SLAndroidSimpleBufferQueueItf pcmBufferQueue = NULL;
 
 public:
-    JfAudio(JfPlayStatus *playStatus,int sample_rate);
+    JfAudio(JfPlayStatus *playStatus,int sample_rate,JfCallJava *callJava);
     ~JfAudio();
 
     void play();//播放
@@ -56,6 +58,9 @@ public:
     void initOpenSLES();
 
     uint getCurrentSampleRateForOpenSLES(int sample_rate);
+
+    void pause();
+    void resume();
 };
 
 

@@ -6,5 +6,6 @@
 
 JfPlayStatus::JfPlayStatus() {
     exit = false;
+    loading = true;
 }
 

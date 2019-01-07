@@ -10,4 +10,15 @@
         android:text="开始"
         android:onClick="begin"/>
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="暂停"
+        android:onClick="pause"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="播放"
+        android:onClick="resume"/>
 </LinearLayout>

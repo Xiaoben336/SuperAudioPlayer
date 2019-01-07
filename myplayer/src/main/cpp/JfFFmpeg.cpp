@@ -46,7 +46,7 @@ void JfFFmpeg::decodeAudioThread() {
     for (int i = 0; i < pAFmtCtx->nb_streams; i++) {
         if (pAFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (audio == NULL) {
-                audio = new JfAudio(playStatus,pAFmtCtx->streams[i]->codecpar->sample_rate);
+                audio = new JfAudio(playStatus,pAFmtCtx->streams[i]->codecpar->sample_rate,callJava);
                 audio->streamIndex = i;
                 audio->codecpar = pAFmtCtx->streams[i]->codecpar;
             }
@@ -101,9 +101,9 @@ void JfFFmpeg::start() {
         if (av_read_frame(pAFmtCtx,avPacket) == 0) {
             if (avPacket->stream_index == audio->streamIndex){
                 count++;
-                if (LOG_DEBUG) {
+                /*if (LOG_DEBUG) {
                     LOGD("解码第%d帧",count);
-                }
+                }*/
                 audio->queue->putAVPacket(avPacket);
             } else {
                 av_packet_free(&avPacket);
@@ -138,5 +138,17 @@ void JfFFmpeg::start() {
 
     if (LOG_DEBUG){
         LOGD("解码完成");
+    }
+}
+
+void JfFFmpeg::pause() {
+    if (audio != NULL){
+        audio->pause();
+    }
+}
+
+void JfFFmpeg::resume() {
+    if (audio != NULL){
+        audio->resume();
     }
 }

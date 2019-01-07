@@ -4,11 +4,13 @@
 
 #include "JfAudio.h"
 
-JfAudio::JfAudio(JfPlayStatus *playStatus,int sample_rate) {
+JfAudio::JfAudio(JfPlayStatus *playStatus,int sample_rate,JfCallJava *callJava) {
     this->playStatus = playStatus;
     this->sample_rate = sample_rate;
+    this->callJava = callJava;
+
     queue = new JfQueue(playStatus);
-    buffer = (uint8_t *)(av_malloc(44100 * 2 * 2));//每秒的pcm数据
+    buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));//每秒的pcm数据
 }
 
 JfAudio::~JfAudio() {
@@ -29,6 +31,21 @@ void JfAudio::play() {
 
 int JfAudio::resampleAudio() {
     while (playStatus != NULL && !playStatus->exit){
+
+        if (queue->getQueueSize() == 0){//加载状态
+            if (!playStatus->loading){
+                playStatus->loading = true;
+                callJava->onCallLoading(CHILD_THREAD,playStatus->loading);
+            }
+            continue;
+        } else {//播放状态
+            if (playStatus->loading){
+                playStatus->loading = false;
+                callJava->onCallLoading(CHILD_THREAD,playStatus->loading);
+            }
+        }
+
+
         avPacket = av_packet_alloc();
         if (queue->getAVPacket(avPacket) != 0){
             av_packet_free(&avPacket);
@@ -95,9 +112,9 @@ int JfAudio::resampleAudio() {
 
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
-            if (LOG_DEBUG){
+            /*if (LOG_DEBUG){
                 LOGD("DATA SIZE == %d",data_size);
-            }
+            }*/
 
             av_packet_free(&avPacket);
             av_free(avPacket);
@@ -238,4 +255,16 @@ uint JfAudio::getCurrentSampleRateForOpenSLES(int sample_rate) {
             rate =  SL_SAMPLINGRATE_44_1;
     }
     return rate;
+}
+
+void JfAudio::pause() {
+    if (pcmPlayerObject != NULL){
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,  SL_PLAYSTATE_PAUSED);
+    }
+}
+
+void JfAudio::resume() {
+    if (pcmPlayerObject != NULL){
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,  SL_PLAYSTATE_PLAYING);
+    }
 }

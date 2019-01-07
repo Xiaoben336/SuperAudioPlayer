@@ -21,11 +21,13 @@ public:
     jobject jobj;
 
     jmethodID jmid_prepared;
+    jmethodID jmid_loading;
 public:
     JfCallJava(JavaVM *vm,JNIEnv *env,jobject *obj);
     ~JfCallJava();
 
-    void onCallPrepared(int threadType);//onCallPrepare的回调
+    void onCallPrepared(int threadType);//onCallPrepare的调用方法
+    void onCallLoading(int threadType, bool loading);//onCallLoading的调用方法
 };
 
 
