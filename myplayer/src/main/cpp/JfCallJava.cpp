@@ -17,6 +17,7 @@ JfCallJava::JfCallJava(JavaVM *vm, JNIEnv *env, jobject *obj) {
 
     jmid_prepared = env->GetMethodID(jclz,"onCallPrepared","()V");
     jmid_loading = env->GetMethodID(jclz,"onCallLoading","(Z)V");
+    jmid_timeinfo = env->GetMethodID(jclz,"onCallTimeInfo","(II)V");
 }
 
 JfCallJava::~JfCallJava() {
@@ -53,6 +54,23 @@ void JfCallJava::onCallLoading(int threadType, bool loading) {
         }
 
         jniEnv->CallVoidMethod(jobj,jmid_loading,loading);
+        javaVM->DetachCurrentThread();
+    }
+}
+
+void JfCallJava::onCallTimeInfo(int threadType, int currentTime, int totalTime) {
+    if (threadType == MAIN_THREAD){
+        jniEnv->CallVoidMethod(jobj,jmid_timeinfo,currentTime,totalTime);
+    } else if (threadType == CHILD_THREAD){
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+            if (LOG_DEBUG) {
+                LOGE("GET CHILD THREAD JNIENV ERROR");
+                return;
+            }
+        }
+
+        jniEnv->CallVoidMethod(jobj,jmid_timeinfo,currentTime,totalTime);
         javaVM->DetachCurrentThread();
     }
 }

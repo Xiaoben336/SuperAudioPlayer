@@ -22,12 +22,14 @@ public:
 
     jmethodID jmid_prepared;
     jmethodID jmid_loading;
+    jmethodID jmid_timeinfo;
 public:
     JfCallJava(JavaVM *vm,JNIEnv *env,jobject *obj);
     ~JfCallJava();
 
     void onCallPrepared(int threadType);//onCallPrepare的调用方法
     void onCallLoading(int threadType, bool loading);//onCallLoading的调用方法
+    void onCallTimeInfo(int threadType,int currentTime,int totalTime);
 };
 
 

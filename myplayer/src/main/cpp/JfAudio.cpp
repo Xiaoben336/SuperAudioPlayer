@@ -112,6 +112,12 @@ int JfAudio::resampleAudio() {
 
             data_size = nb * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
+            now_time = avFrame->pts * av_q2d(time_base);
+
+            if (now_time < clock){
+                now_time = clock;
+            }
+            clock = now_time;
             /*if (LOG_DEBUG){
                 LOGD("DATA SIZE == %d",data_size);
             }*/
@@ -148,6 +154,13 @@ void pcmBufferCallback(SLAndroidSimpleBufferQueueItf bf,void *context){
     if (jfAudio != NULL){
         int buffer_size = jfAudio->resampleAudio();
         if (buffer_size > 0){
+            jfAudio->clock += buffer_size / ((double)(jfAudio->sample_rate * 2 * 2));
+
+            if (jfAudio->clock - jfAudio->last_time > 0.1){//每秒回调10次就够了
+                jfAudio->last_time = jfAudio->clock;
+                jfAudio->callJava->onCallTimeInfo(CHILD_THREAD,jfAudio->clock,jfAudio->duration);
+            }
+
             (*jfAudio->pcmBufferQueue)->Enqueue(jfAudio->pcmBufferQueue,jfAudio->buffer,buffer_size);
         }
     } else {

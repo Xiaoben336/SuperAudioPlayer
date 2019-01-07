@@ -36,6 +36,13 @@ public:
     int data_size;//buffer size
     int sample_rate = 0;//保存输入音频文件OpenSL ES的采样率
 
+    int duration = 0;//一个 frame 的持续时间
+    AVRational time_base;
+    double now_time = 0;
+    int clock = 0;
+    int last_time = 0;
+
+
     SLObjectItf engineObject = NULL;
     SLEngineItf engineEngine = NULL;
 

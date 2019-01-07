@@ -49,6 +49,8 @@ void JfFFmpeg::decodeAudioThread() {
                 audio = new JfAudio(playStatus,pAFmtCtx->streams[i]->codecpar->sample_rate,callJava);
                 audio->streamIndex = i;
                 audio->codecpar = pAFmtCtx->streams[i]->codecpar;
+                audio->duration = pAFmtCtx->duration / AV_TIME_BASE;//单位是秒
+                audio->time_base = pAFmtCtx->streams[i]->time_base;
             }
         }
     }

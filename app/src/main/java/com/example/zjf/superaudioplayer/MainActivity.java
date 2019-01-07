@@ -1,27 +1,35 @@
 package com.example.zjf.superaudioplayer;
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.myplayer.bean.JfTimeInfoBean;
 import com.example.myplayer.listener.JfOnLoadingListener;
 import com.example.myplayer.listener.JfOnPauseResumeListener;
 import com.example.myplayer.listener.JfOnPreparedListener;
+import com.example.myplayer.listener.JfOnTimeInfoListener;
 import com.example.myplayer.log.JfLog;
 import com.example.myplayer.player.JfPlayer;
+import com.example.myplayer.util.JfTimeUtil;
 
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "MainActivity";
+	private TextView tv_time;
 	JfPlayer jfPlayer;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		tv_time = (TextView) findViewById(R.id.tv_time);
 		jfPlayer = new JfPlayer();
 		jfPlayer.setJfOnPreparedListener(new JfOnPreparedListener() {
 			@Override
@@ -53,6 +61,17 @@ public class MainActivity extends AppCompatActivity {
 
 			}
 		});
+
+		jfPlayer.setJfOnTimeInfoListener(new JfOnTimeInfoListener() {
+			@Override
+			public void onTimeInfo(JfTimeInfoBean timeInfoBean) {
+				//JfLog.d(timeInfoBean.toString());
+				Message message = Message.obtain();
+				message.what = 1;
+				message.obj = timeInfoBean;
+				handler.sendMessage(message);
+			}
+		});
 	}
 
 	public void begin(View view) {
@@ -70,4 +89,17 @@ public class MainActivity extends AppCompatActivity {
 	public void resume(View view) {
 		jfPlayer.resume();
 	}
+
+
+	Handler handler = new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+			if (msg.what == 1) {
+				JfTimeInfoBean jfTimeInfoBean = (JfTimeInfoBean) msg.obj;
+				tv_time.setText(JfTimeUtil.secdsToDateFormat(jfTimeInfoBean.getTotalTime(),jfTimeInfoBean.getTotalTime()) +
+								"/" + JfTimeUtil.secdsToDateFormat(jfTimeInfoBean.getCurrentTime(),jfTimeInfoBean.getTotalTime()));
+			}
+		}
+	};
 }

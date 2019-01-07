@@ -2,9 +2,11 @@ package com.example.myplayer.player;
 
 import android.text.TextUtils;
 
+import com.example.myplayer.bean.JfTimeInfoBean;
 import com.example.myplayer.listener.JfOnLoadingListener;
 import com.example.myplayer.listener.JfOnPauseResumeListener;
 import com.example.myplayer.listener.JfOnPreparedListener;
+import com.example.myplayer.listener.JfOnTimeInfoListener;
 import com.example.myplayer.log.JfLog;
 
 public class JfPlayer {
@@ -24,6 +26,9 @@ public class JfPlayer {
 	private JfOnPreparedListener jfOnPreparedListener;
 	private JfOnLoadingListener jfOnLoadingListener;
 	private JfOnPauseResumeListener jfOnPauseResumeListener;
+	private JfOnTimeInfoListener jfOnTimeInfoListener;
+
+	private static JfTimeInfoBean jfTimeInfoBean;
 	public JfPlayer(){
 
 	}
@@ -46,6 +51,10 @@ public class JfPlayer {
 
 	public void setJfOnPauseResumeListener(JfOnPauseResumeListener jfOnPauseResumeListener) {
 		this.jfOnPauseResumeListener = jfOnPauseResumeListener;
+	}
+
+	public void setJfOnTimeInfoListener(JfOnTimeInfoListener jfOnTimeInfoListener) {
+		this.jfOnTimeInfoListener = jfOnTimeInfoListener;
 	}
 
 	public void prepared(){
@@ -109,7 +118,7 @@ public class JfPlayer {
 	}
 
 	/**
-	 * 				   C++调用Java层
+	 *
 	 * @param loading
 	 */
 	public void onCallLoading(boolean loading){
@@ -117,6 +126,19 @@ public class JfPlayer {
 			jfOnLoadingListener.onLoading(loading);
 		}
 	}
+
+	public void onCallTimeInfo(int currentTime,int totalTime){
+		if (jfOnTimeInfoListener != null) {
+			if (jfTimeInfoBean == null) {
+				jfTimeInfoBean = new JfTimeInfoBean();
+			}
+			jfTimeInfoBean.setCurrentTime(currentTime);
+			jfTimeInfoBean.setTotalTime(totalTime);
+			jfOnTimeInfoListener.onTimeInfo(jfTimeInfoBean);
+		}
+	}
+
+
 	private native void n_prepared(String source);
 	private native void n_start();
 	private native void n_pause();
