@@ -7,5 +7,10 @@
 JfPlayStatus::JfPlayStatus() {
     exit = false;
     loading = true;
+    seeking = false;
+}
+
+JfPlayStatus::~JfPlayStatus() {
+
 }
 

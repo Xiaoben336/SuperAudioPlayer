@@ -13,8 +13,10 @@ class JfPlayStatus {
 public:
     bool exit;
     bool loading;
+    bool seeking;
 public:
     JfPlayStatus();
+    ~JfPlayStatus();
 };
 
 

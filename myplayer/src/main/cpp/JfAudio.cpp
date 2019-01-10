@@ -281,3 +281,56 @@ void JfAudio::resume() {
         (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,  SL_PLAYSTATE_PLAYING);
     }
 }
+
+void JfAudio::stop() {
+    if (pcmPlayerObject != NULL){
+        (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay,  SL_PLAYSTATE_STOPPED);
+    }
+}
+
+void JfAudio::release() {
+    stop();
+
+    if (queue != NULL){
+        delete(queue);
+        queue = NULL;
+    }
+
+    if (pcmPlayerObject != NULL){
+        (*pcmPlayerObject)->Destroy(pcmPlayerObject);
+        pcmPlayerObject = NULL;
+        pcmPlayerPlay = NULL;
+        pcmBufferQueue = NULL;
+    }
+
+    if (outputMixObject != NULL){
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = NULL;
+        outputMixEnvReb = NULL;
+    }
+
+    if (engineObject != NULL){
+        (*engineObject)->Destroy(engineObject);
+        engineObject = NULL;
+        engineEngine = NULL;
+    }
+
+    if (buffer != NULL){
+        free(buffer);
+        buffer = NULL;
+    }
+
+    if (pACodecCtx != NULL){
+        avcodec_close(pACodecCtx);
+        avcodec_free_context(&pACodecCtx);
+        pACodecCtx = NULL;
+    }
+
+    if (playStatus != NULL){
+        playStatus = NULL;
+    }
+
+    if (callJava != NULL){
+        callJava = NULL;
+    }
+}

@@ -18,6 +18,8 @@ JfCallJava::JfCallJava(JavaVM *vm, JNIEnv *env, jobject *obj) {
     jmid_prepared = env->GetMethodID(jclz,"onCallPrepared","()V");
     jmid_loading = env->GetMethodID(jclz,"onCallLoading","(Z)V");
     jmid_timeinfo = env->GetMethodID(jclz,"onCallTimeInfo","(II)V");
+    jmid_error = env->GetMethodID(jclz,"onCallError","(ILjava/lang/String;)V");
+    jmid_complete = env->GetMethodID(jclz,"onCallComplete","()V");
 }
 
 JfCallJava::~JfCallJava() {
@@ -71,6 +73,43 @@ void JfCallJava::onCallTimeInfo(int threadType, int currentTime, int totalTime) 
         }
 
         jniEnv->CallVoidMethod(jobj,jmid_timeinfo,currentTime,totalTime);
+        javaVM->DetachCurrentThread();
+    }
+}
+
+void JfCallJava::onCallError(int threadType, int code, char *msg) {
+    if (threadType == MAIN_THREAD){
+        jstring jmsg = jniEnv->NewStringUTF(msg);
+        jniEnv->CallVoidMethod(jobj,jmid_error,code,jmsg);
+        jniEnv->DeleteLocalRef(jmsg);
+    } else if (threadType == CHILD_THREAD){
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+            if (LOG_DEBUG) {
+                LOGE("GET CHILD THREAD JNIENV ERROR");
+                return;
+            }
+        }
+        jstring jmsg = jniEnv->NewStringUTF(msg);
+        jniEnv->CallVoidMethod(jobj,jmid_error,code,jmsg);
+        jniEnv->DeleteLocalRef(jmsg);
+        javaVM->DetachCurrentThread();
+    }
+}
+
+void JfCallJava::onCallComplete(int threadType) {
+    if (threadType == MAIN_THREAD){
+        jniEnv->CallVoidMethod(jobj,jmid_complete);
+    } else if (threadType == CHILD_THREAD){
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv,0) != JNI_OK){
+            if (LOG_DEBUG) {
+                LOGE("GET CHILD THREAD JNIENV ERROR");
+                return;
+            }
+        }
+
+        jniEnv->CallVoidMethod(jobj,jmid_complete);
         javaVM->DetachCurrentThread();
     }
 }

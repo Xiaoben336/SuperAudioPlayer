@@ -22,12 +22,31 @@
         android:text="播放"
         android:onClick="resume"/>
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="停止"
+        android:onClick="stop"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seek"
+        android:onClick="Seek"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="切换"
+        android:onClick="playNext"/>
+
     <TextView
         android:id="@+id/tv_time"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#222222"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="20dp"
-        android:text="00:00/00:00"/>
+        android:text="00:00/00:00"
+        android:gravity="center_horizontal"/>
 </LinearLayout>

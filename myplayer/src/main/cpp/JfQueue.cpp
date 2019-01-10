@@ -12,6 +12,7 @@ JfQueue::JfQueue(JfPlayStatus *jfPlayStatus) {
 }
 
 JfQueue::~JfQueue() {
+    clearAVPacket();
     pthread_mutex_destroy(&mutexPacket);
     pthread_cond_destroy(&condPacket);
 }
@@ -63,4 +64,21 @@ int JfQueue::getQueueSize() {
     size = queuePacket.size();
     pthread_mutex_unlock(&mutexPacket);
     return size;
+}
+
+void JfQueue::clearAVPacket() {
+    //有可能释放资源时线程还在加锁中
+    pthread_cond_signal(&condPacket);
+
+    pthread_mutex_lock(&mutexPacket);
+
+    while (!queuePacket.empty()){
+        //先出队再释放
+        AVPacket *packet = queuePacket.front();
+        queuePacket.pop();
+        av_packet_free(&packet);
+        av_free(packet);
+        packet = NULL;
+    }
+    pthread_mutex_unlock(&mutexPacket);
 }

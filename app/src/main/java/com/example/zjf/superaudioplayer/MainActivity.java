@@ -11,6 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.myplayer.bean.JfTimeInfoBean;
+import com.example.myplayer.listener.JfOnCompleteListener;
+import com.example.myplayer.listener.JfOnErrorListener;
 import com.example.myplayer.listener.JfOnLoadingListener;
 import com.example.myplayer.listener.JfOnPauseResumeListener;
 import com.example.myplayer.listener.JfOnPreparedListener;
@@ -72,11 +74,26 @@ public class MainActivity extends AppCompatActivity {
 				handler.sendMessage(message);
 			}
 		});
+
+		jfPlayer.setJfOnErrorListener(new JfOnErrorListener() {
+			@Override
+			public void onError(int code, String msg) {
+				JfLog.e("code = " + code + "   msg = " + msg);
+			}
+		});
+
+		jfPlayer.setJfOnCompleteListener(new JfOnCompleteListener() {
+			@Override
+			public void onComplete() {
+				JfLog.d("播放完成");
+			}
+		});
 	}
 
 	public void begin(View view) {
-		jfPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
-		//jfPlayer.setSource(Environment.getExternalStorageDirectory() + File.separator + "Charlie Puth - Look At Me Now.mp3");
+		//jfPlayer.setSource("http://ngcdn004.cnr.cn/live/dszs/index.m3u8");
+		//jfPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+		jfPlayer.setSource(Environment.getExternalStorageDirectory() + File.separator + "Charlie Puth - Look At Me Now.mp3");
 		Log.d(TAG,"Environment.getExternalStorageDirectory() + File.separator  === " + Environment.getExternalStorageDirectory() + File.separator + "");
 		jfPlayer.prepared();
 	}
@@ -88,6 +105,14 @@ public class MainActivity extends AppCompatActivity {
 
 	public void resume(View view) {
 		jfPlayer.resume();
+	}
+
+	public void stop(View view) {
+		jfPlayer.stop();
+	}
+
+	public void Seek(View view) {
+		jfPlayer.seek(190);
 	}
 
 
@@ -102,4 +127,8 @@ public class MainActivity extends AppCompatActivity {
 			}
 		}
 	};
+
+	public void playNext(View view) {
+		jfPlayer.playNest("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+	}
 }

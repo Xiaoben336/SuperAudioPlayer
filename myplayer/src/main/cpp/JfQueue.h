@@ -28,6 +28,8 @@ public:
     int putAVPacket(AVPacket *avPacket);//将AVPacket放进队列中
     int getAVPacket(AVPacket *avPacket);//从队列中取出AVPacket
     int getQueueSize();
+
+    void clearAVPacket();
 };
 
 
