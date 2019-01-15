@@ -4,41 +4,58 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
+    <com.example.myplayer.opengl.JfGLSurfaceView
+        android:id="@+id/jfglsfv"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="开始"
-        android:onClick="begin"/>
+        android:layout_height="250dp" />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="暂停"
-        android:onClick="pause"/>
 
-    <Button
+    <SeekBar
+        android:id="@+id/seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="播放"
-        android:onClick="resume"/>
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开始"
+            android:onClick="begin"/>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="停止"
-        android:onClick="stop"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="暂停"
+            android:onClick="pause"/>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Seek"
-        android:onClick="Seek"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="播放"
+            android:onClick="resume"/>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="切换"
-        android:onClick="playNext"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="停止"
+            android:onClick="stop"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="切换"
+            android:onClick="playNext"/>
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/tv_time"
@@ -49,4 +66,5 @@
         android:layout_marginTop="20dp"
         android:text="00:00/00:00"
         android:gravity="center_horizontal"/>
+
 </LinearLayout>

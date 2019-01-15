@@ -25,6 +25,10 @@ public:
     jmethodID jmid_timeinfo;
     jmethodID jmid_error;
     jmethodID jmid_complete;
+    jmethodID jmid_renderyuv;
+    jmethodID jmid_issupcodec;
+    jmethodID jmid_initmediacodec;
+    jmethodID jmid_decodeavpacket;
 public:
     JfCallJava(JavaVM *vm,JNIEnv *env,jobject *obj);
     ~JfCallJava();
@@ -34,6 +38,10 @@ public:
     void onCallTimeInfo(int threadType,int currentTime,int totalTime);
     void onCallError(int threadType,int code, char *msg);
     void onCallComplete(int threadType);
+    void onCallRenderYUV(int threadType,int width,int height,uint8_t *fy,uint8_t *fu,uint8_t *fv);
+    bool onCallIsSupCodec(const char *ffcodecname);
+    void onCallInitMediaCodec(const char *mime,int width,int height,uint8_t csd0_size,uint8_t csd1_size,uint8_t *csd_0,uint8_t *csd_1);
+    void onCallDecodeAVPacket(int datasize,uint8_t *packetdata);
 };
 
 

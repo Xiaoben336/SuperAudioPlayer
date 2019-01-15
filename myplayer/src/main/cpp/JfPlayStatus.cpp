@@ -8,6 +8,7 @@ JfPlayStatus::JfPlayStatus() {
     exit = false;
     loading = true;
     seeking = false;
+    pausing = false;
 }
 
 JfPlayStatus::~JfPlayStatus() {

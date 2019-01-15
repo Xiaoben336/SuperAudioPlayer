@@ -11,37 +11,47 @@ JfAudio::JfAudio(JfPlayStatus *playStatus,int sample_rate,JfCallJava *callJava) 
 
     queue = new JfQueue(playStatus);
     buffer = (uint8_t *)(av_malloc(sample_rate * 2 * 2));//每秒的pcm数据
+    pthread_mutex_init(&codec_mutex,NULL);
 }
 
 JfAudio::~JfAudio() {
-
+    pthread_mutex_destroy(&codec_mutex);
 }
 
 
 void *decodePlay(void *data){
     JfAudio *jfAudio = (JfAudio *)(data);
-    //jfAudio->resampleAudio();
     jfAudio->initOpenSLES();
-    pthread_exit(&jfAudio->playThread);
+    //pthread_exit(&jfAudio->playThread);
+    return 0;
 }
 void JfAudio::play() {
-    pthread_create(&playThread,NULL,decodePlay,this);
+    if (playStatus != NULL && !playStatus->exit){
+        pthread_create(&playThread,NULL,decodePlay,this);
+    }
 }
 
 
 int JfAudio::resampleAudio() {
     while (playStatus != NULL && !playStatus->exit){
 
+        if (playStatus->seeking){
+            av_usleep(1000 * 100);
+            continue;
+        }
         if (queue->getQueueSize() == 0){//加载状态
             if (!playStatus->loading){
                 playStatus->loading = true;
                 callJava->onCallLoading(CHILD_THREAD,playStatus->loading);
+                LOGD("AUDIO加载状态");
             }
+            av_usleep(1000 * 100);
             continue;
         } else {//播放状态
             if (playStatus->loading){
                 playStatus->loading = false;
                 callJava->onCallLoading(CHILD_THREAD,playStatus->loading);
+                LOGD("AUDIO播放状态");
             }
         }
 
@@ -53,11 +63,14 @@ int JfAudio::resampleAudio() {
             avPacket = NULL;
             continue;
         }
+
+        pthread_mutex_lock(&codec_mutex);
         ret = avcodec_send_packet(pACodecCtx,avPacket);
         if (ret != NULL){
             av_packet_free(&avPacket);
             av_free(avPacket);
             avPacket = NULL;
+            pthread_mutex_unlock(&codec_mutex);
             continue;
         }
 
@@ -82,22 +95,17 @@ int JfAudio::resampleAudio() {
                     NULL);
 
             if (!swr_ctx || swr_init(swr_ctx) < 0){
-
                 av_packet_free(&avPacket);
                 av_free(avPacket);
                 avPacket = NULL;
-
                 av_frame_free(&avFrame);
                 av_free(avFrame);
                 avFrame = NULL;
-
                 if (swr_ctx != NULL){
                     swr_free(&swr_ctx);
                     swr_ctx = NULL;
                 }
-                if (LOG_DEBUG){
-                    LOGE("!swr_ctx || swr_init(swr_ctx) < 0");
-                }
+                pthread_mutex_unlock(&codec_mutex);
                 continue;
             }
 
@@ -132,6 +140,7 @@ int JfAudio::resampleAudio() {
 
             swr_free(&swr_ctx);
             swr_ctx = NULL;
+            pthread_mutex_unlock(&codec_mutex);
             break;
         } else {
             av_packet_free(&avPacket);
@@ -141,6 +150,7 @@ int JfAudio::resampleAudio() {
             av_frame_free(&avFrame);
             av_free(avFrame);
             avFrame = NULL;
+            pthread_mutex_unlock(&codec_mutex);
             continue;
         }
     }
@@ -204,9 +214,9 @@ void JfAudio::initOpenSLES() {
     SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX,outputMixObject};
     SLDataSink audioSink = {&outputMix,NULL};
 
-    const SLInterfaceID ids[1] = {SL_IID_BUFFERQUEUE};
-    const SLboolean req[1] = {SL_BOOLEAN_TRUE};
-    (*engineEngine)->CreateAudioPlayer(engineEngine,&pcmPlayerObject,&slDataSource,&audioSink,1,ids,req);
+    const SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE,SL_IID_PLAYBACKRATE};
+    const SLboolean req[2] = {SL_BOOLEAN_TRUE,SL_BOOLEAN_TRUE};
+    (*engineEngine)->CreateAudioPlayer(engineEngine,&pcmPlayerObject,&slDataSource,&audioSink,2,ids,req);
     (*pcmPlayerObject)->Realize(pcmPlayerObject,SL_BOOLEAN_FALSE);
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject,SL_IID_PLAY,&pcmPlayerPlay);
 
@@ -289,7 +299,12 @@ void JfAudio::stop() {
 }
 
 void JfAudio::release() {
-    stop();
+    //stop();
+    //有可能队列为空，会只阻塞，拿不到数据
+    if (queue != NULL){
+        queue->noticeQueue();//把阻塞唤醒
+    }
+    pthread_join(playThread,NULL);
 
     if (queue != NULL){
         delete(queue);
@@ -321,9 +336,11 @@ void JfAudio::release() {
     }
 
     if (pACodecCtx != NULL){
+        //pthread_mutex_lock(&codec_mutex);
         avcodec_close(pACodecCtx);
         avcodec_free_context(&pACodecCtx);
         pACodecCtx = NULL;
+        //pthread_mutex_unlock(&codec_mutex);
     }
 
     if (playStatus != NULL){

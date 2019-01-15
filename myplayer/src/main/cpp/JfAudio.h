@@ -13,6 +13,7 @@
 extern "C"{
 #include <libavcodec/avcodec.h>
 #include <libswresample/swresample.h>
+#include <libavutil/time.h>
 };
 
 
@@ -55,6 +56,7 @@ public:
 
     SLAndroidSimpleBufferQueueItf pcmBufferQueue = NULL;
 
+    pthread_mutex_t codec_mutex;
 public:
     JfAudio(JfPlayStatus *playStatus,int sample_rate,JfCallJava *callJava);
     ~JfAudio();

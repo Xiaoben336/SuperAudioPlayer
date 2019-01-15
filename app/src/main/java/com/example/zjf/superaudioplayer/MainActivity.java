@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import com.example.myplayer.listener.JfOnPauseResumeListener;
 import com.example.myplayer.listener.JfOnPreparedListener;
 import com.example.myplayer.listener.JfOnTimeInfoListener;
 import com.example.myplayer.log.JfLog;
+import com.example.myplayer.opengl.JfGLSurfaceView;
 import com.example.myplayer.player.JfPlayer;
 import com.example.myplayer.util.JfTimeUtil;
 
@@ -26,13 +28,23 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 	private static final String TAG = "MainActivity";
 	private TextView tv_time;
+	private JfGLSurfaceView jfGLSurfaceView;
+	private SeekBar seekBar;
 	JfPlayer jfPlayer;
+
+	private int position;
+	private boolean seek = false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		tv_time = (TextView) findViewById(R.id.tv_time);
+		jfGLSurfaceView = (JfGLSurfaceView) findViewById(R.id.jfglsfv);
+		seekBar = (SeekBar)findViewById(R.id.seekbar);
+
 		jfPlayer = new JfPlayer();
+		jfPlayer.setJfGLSurfaceView(jfGLSurfaceView);
+
 		jfPlayer.setJfOnPreparedListener(new JfOnPreparedListener() {
 			@Override
 			public void onPrepared() {
@@ -88,13 +100,40 @@ public class MainActivity extends AppCompatActivity {
 				JfLog.d("播放完成");
 			}
 		});
+
+		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				position = progress * jfPlayer.getDuration() / 100;
+
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				seek = true;
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				jfPlayer.seek(position);
+				seek = false;
+			}
+		});
 	}
 
 	public void begin(View view) {
 		//jfPlayer.setSource("http://ngcdn004.cnr.cn/live/dszs/index.m3u8");
 		//jfPlayer.setSource("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
-		jfPlayer.setSource(Environment.getExternalStorageDirectory() + File.separator + "Charlie Puth - Look At Me Now.mp3");
-		Log.d(TAG,"Environment.getExternalStorageDirectory() + File.separator  === " + Environment.getExternalStorageDirectory() + File.separator + "");
+		//jfPlayer.setSource(Environment.getExternalStorageDirectory() + File.separator + "Charlie Puth - Look At Me Now.mp3");
+
+		//jfPlayer.setSource("mnt/shell/emulated/0/Others/[SLAM DUNK][001].mp4");
+		jfPlayer.setSource("mnt/shell/emulated/0/Others/楚乔传 01.mp4");
+		//jfPlayer.setSource("mnt/shell/emulated/0/Others/4K.mp4");
+		//jfPlayer.setSource("mnt/shell/emulated/0/Others/01.mp4");
+		//jfPlayer.setSource("mnt/shell/emulated/0/Others/video-h265.mkv");
+
+		//jfPlayer.setSource(Environment.getExternalStorageDirectory() + File.separator + "01.mp4");
+		//Log.d(TAG,"Environment.getExternalStorageDirectory() + File.separator  === " + Environment.getExternalStorageDirectory() + File.separator + "");
 		jfPlayer.prepared();
 	}
 
@@ -111,10 +150,6 @@ public class MainActivity extends AppCompatActivity {
 		jfPlayer.stop();
 	}
 
-	public void Seek(View view) {
-		jfPlayer.seek(190);
-	}
-
 
 	Handler handler = new Handler(){
 		@Override
@@ -124,11 +159,15 @@ public class MainActivity extends AppCompatActivity {
 				JfTimeInfoBean jfTimeInfoBean = (JfTimeInfoBean) msg.obj;
 				tv_time.setText(JfTimeUtil.secdsToDateFormat(jfTimeInfoBean.getTotalTime(),jfTimeInfoBean.getTotalTime()) +
 								"/" + JfTimeUtil.secdsToDateFormat(jfTimeInfoBean.getCurrentTime(),jfTimeInfoBean.getTotalTime()));
+				if (!seek && jfTimeInfoBean.getTotalTime() > 0) {
+					seekBar.setProgress(jfTimeInfoBean.getCurrentTime() * 100 / jfTimeInfoBean.getTotalTime());
+				}
 			}
 		}
 	};
 
 	public void playNext(View view) {
-		jfPlayer.playNest("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+		//jfPlayer.playNest("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3");
+		jfPlayer.playNest("mnt/shell/emulated/0/Others/[SLAM DUNK][001].mp4");
 	}
 }

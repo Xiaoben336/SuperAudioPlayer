@@ -14,6 +14,8 @@ public:
     bool exit;
     bool loading;
     bool seeking;
+    bool pausing;
+
 public:
     JfPlayStatus();
     ~JfPlayStatus();

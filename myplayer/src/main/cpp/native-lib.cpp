@@ -54,7 +54,8 @@ Java_com_example_myplayer_player_JfPlayer_n_1prepared(JNIEnv *env, jobject insta
 void *startCallback(void *data){
     JfFFmpeg *ffmpeg = (JfFFmpeg *)data;
     ffmpeg->start();
-    pthread_exit(&thread_start);
+    return 0;
+    //pthread_exit(&thread_start);
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -102,6 +103,9 @@ Java_com_example_myplayer_player_JfPlayer_n_1stop(JNIEnv *env, jobject instance)
     nexit = false;
     if (ffmpeg != NULL){
         ffmpeg->release();
+
+        pthread_join(thread_start,NULL);
+
         delete(ffmpeg);
         ffmpeg = NULL;
 

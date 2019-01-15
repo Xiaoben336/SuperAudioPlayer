@@ -8,6 +8,7 @@
 #include "JfCallJava.h"
 #include "JfAudio.h"
 #include "pthread.h"
+#include "JfVideo.h"
 
 extern "C"{
 #include <libavformat/avformat.h>
@@ -27,16 +28,20 @@ public:
     /**
      * 解码相关
      */
-    AVFormatContext *pAFmtCtx = NULL;
+    AVFormatContext *pFmtCtx = NULL;
     JfAudio *audio = NULL;
-
+    JfVideo *video = NULL;
     JfPlayStatus *playStatus = NULL;
+
+    bool supMediaCodec = false;
+
+    const AVBitStreamFilter *bsFilter = NULL;
 public:
     JfFFmpeg(JfPlayStatus *playStatus,JfCallJava *callJava,const char *url);//参数都是从外面传进来的
     ~JfFFmpeg();
 
     void prepare();
-    void decodeAudioThread();
+    void decodeFFmpegThread();
 
     void start();
     void pause();
@@ -44,6 +49,8 @@ public:
     void release();
 
     void seek(int64_t sec);
+
+    int initCodecContext(AVCodecParameters *codecParameters,AVCodecContext **pCodecContext);
 };
 
 

@@ -82,3 +82,7 @@ void JfQueue::clearAVPacket() {
     }
     pthread_mutex_unlock(&mutexPacket);
 }
+
+void JfQueue::noticeQueue() {
+    pthread_cond_signal(&condPacket);
+}
